@@ -3060,9 +3060,11 @@ body{font-family:var(--font);background:#DEDEDE;display:flex;height:100vh;overfl
 .c-body-text{font-size:36px;font-weight:400;color:#6E6E6E;line-height:1.55;margin-bottom:36px;display:none}
 .c-chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
 .c-chips-wrap{display:inline-flex;flex-wrap:wrap;gap:12px;background:rgba(255,255,255,0.30);border-radius:28px;padding:12px;gap:12px;backdrop-filter:blur(10px);margin-top:4px;position:relative}
-.c-chips-wrap .c-chip{background:rgba(255,255,255,0.80);border:1.5px solid rgba(0,0,0,0.07);border-radius:16px;padding:12px;font-size:24px;font-weight:500;color:#121212;line-height:1}
+.c-chips-wrap .c-chip{background:rgba(255,255,255,0.50);border:1.5px solid rgba(0,0,0,0.07);border-radius:16px;padding:12px;font-size:24px;font-weight:500;color:#121212;line-height:1}
+.c-chips-wrap .c-chip:only-child{background:rgba(255,255,255,0.80)}
 .c-chips-wrap .c-chip i{font-size:26px;color:#121212;line-height:1}
-.c-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.80);border:1.5px solid rgba(0,0,0,0.07);border-radius:16px;padding:12px;font-size:24px;font-weight:500;color:#121212;backdrop-filter:blur(8px);line-height:1}
+.c-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.50);border:1.5px solid rgba(0,0,0,0.07);border-radius:16px;padding:12px;font-size:24px;font-weight:500;color:#121212;backdrop-filter:blur(8px);line-height:1}
+.c-chip:only-child{background:rgba(255,255,255,0.80)}
 .c-chip i{font-size:26px;color:#121212;line-height:1}
 /* Download-safe overrides: simplify elements html2canvas can't render */
 #canvas.downloading .c-chip{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -3709,10 +3711,12 @@ function render() {
 
 // Squircle (iOS-style smooth corners, 60% smoothing)
 function squircleFull(W, H, R, S = 0.6) {
+  R = Math.min(R, Math.min(W, H) / 2 / (1 + S));
   const a = R * S, c = R * 0.45;
   return `path('M ${R+a} 0 L ${W-R-a} 0 C ${W-c} 0 ${W} ${c} ${W} ${R+a} L ${W} ${H-R-a} C ${W} ${H-c} ${W-c} ${H} ${W-R-a} ${H} L ${R+a} ${H} C ${c} ${H} 0 ${H-c} 0 ${H-R-a} L 0 ${R+a} C 0 ${c} ${c} 0 ${R+a} 0 Z')`;
 }
 function squircleRight(W, H, R, S = 0.6) {
+  R = Math.min(R, H / 2 / (1 + S));
   const a = R * S, c = R * 0.45;
   return `path('M 0 0 L ${W-R-a} 0 C ${W-c} 0 ${W} ${c} ${W} ${R+a} L ${W} ${H-R-a} C ${W} ${H-c} ${W-c} ${H} ${W-R-a} ${H} L 0 ${H} Z')`;
 }
