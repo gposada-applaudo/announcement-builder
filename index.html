@@ -3796,6 +3796,35 @@ async function downloadPNG() {
   // 3. Apply download-safe CSS overrides (backdrop-filter, pseudo-elements, semi-transparent backgrounds)
   canvas.classList.add('downloading');
 
+  // 4. Simulate frosted glass effect (backdrop-filter cannot be captured by html2canvas)
+  const frostedEl = document.getElementById('c-frosted');
+  const origFrostedBgImage = frostedEl.style.backgroundImage;
+  const origFrostedBgSize  = frostedEl.style.backgroundSize;
+  const origFrostedBgPos   = frostedEl.style.backgroundPosition;
+  const origFrostedBgColor = frostedEl.style.backgroundColor;
+  const origFrostedBackdrop = frostedEl.style.backdropFilter;
+  const origFrostedWebkit   = frostedEl.style.webkitBackdropFilter;
+
+  const bgImg = canvas.querySelector('.c-media img');
+  if (S.layout === 'full-bleed' && frostedEl.style.display !== 'none' && bgImg && bgImg.src) {
+    const tmpC = document.createElement('canvas');
+    tmpC.width = 1920; tmpC.height = 1080;
+    const ctx = tmpC.getContext('2d');
+    ctx.filter = 'blur(20px)';
+    ctx.drawImage(bgImg, -40, -40, 2000, 1160); // overdraw to avoid darkened edges from blur
+    const blurredUrl = tmpC.toDataURL('image/jpeg', 0.90);
+    const x = frostedEl.offsetLeft;
+    const y = frostedEl.offsetTop;
+    frostedEl.style.backdropFilter = 'none';
+    frostedEl.style.webkitBackdropFilter = 'none';
+    frostedEl.style.backgroundImage = `linear-gradient(rgba(255,255,255,0.50),rgba(255,255,255,0.50)),url(${blurredUrl})`;
+    frostedEl.style.backgroundSize = 'cover, 1920px 1080px';
+    frostedEl.style.backgroundPosition = `center, -${x}px -${y}px`;
+    frostedEl.style.backgroundColor = 'transparent';
+  }
+
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
   try {
     const c = await html2canvas(canvas, {scale:1,useCORS:true,allowTaint:true,width:1920,height:1080,backgroundColor:null,logging:false});
     const a = document.createElement('a');
@@ -3805,6 +3834,12 @@ async function downloadPNG() {
   } catch(e) { alert('Download failed: '+e.message); }
   finally {
     canvas.classList.remove('downloading');
+    frostedEl.style.backdropFilter = origFrostedBackdrop;
+    frostedEl.style.webkitBackdropFilter = origFrostedWebkit;
+    frostedEl.style.backgroundImage = origFrostedBgImage;
+    frostedEl.style.backgroundSize  = origFrostedBgSize;
+    frostedEl.style.backgroundPosition = origFrostedBgPos;
+    frostedEl.style.backgroundColor = origFrostedBgColor;
     svgImgs.forEach((img, i) => img.src = origSvgSrcs[i]);
     coverImgs.forEach((img, i) => { img.src = origCoverData[i].src; img.style.objectFit = origCoverData[i].objectFit; });
     canvas.style.transform = orig;
