@@ -2911,8 +2911,9 @@
 :root{--font:'Avenir Next',system-ui,sans-serif;--red:#FF4040;--black:#121212;--g50:#F7F7F7;--g100:#EBEBEB;--g200:#DEDEDE;--g500:#6E6E6E}
 body{font-family:var(--font);background:#DEDEDE;display:flex;height:100vh;overflow:hidden;color:var(--black)}
 
-.editor{width:365px;min-width:365px;height:100vh;overflow-y:auto;background:#fff;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(0,0,0,0.08);z-index:10;position:relative;flex-shrink:0}
+.editor{width:402px;min-width:402px;height:100vh;overflow-y:auto;background:#fff;display:flex;flex-direction:column;box-shadow:2px 0 16px rgba(0,0,0,0.08);z-index:10;position:relative;flex-shrink:0}
 .resize-handle{position:absolute;top:0;right:0;width:5px;height:100%;cursor:ew-resize;z-index:20;background:transparent;transition:background .15s}
+.resize-handle:hover{background:rgba(0,0,0,0.08)}
 .resize-handle:hover{background:rgba(0,0,0,0.08)}
 .editor-header{padding:18px 22px 14px;border-bottom:1px solid var(--g100);display:flex;align-items:center;gap:12px;flex-shrink:0}
 .editor-header img{height:26px}
@@ -2928,7 +2929,7 @@ body{font-family:var(--font);background:#DEDEDE;display:flex;height:100vh;overfl
 
 .initiative-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;justify-items:start}
 .init-btn{padding:4px 6px;border:none;border-radius:8px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;outline:2px solid transparent;outline-offset:-2px}
-.init-btn img{height:28px;width:auto;object-fit:contain}
+.init-btn img{height:22px;width:auto;object-fit:contain}
 .init-btn.active{outline-color:var(--red);background:#fff5f5}
 .init-btn:hover:not(.active){background:var(--g50)}
 
@@ -3387,7 +3388,7 @@ function renderChips() {
         <option value="ri-time-line" ${chip.icon==='ri-time-line'?'selected':''}>Time</option>
         <option value="ri-map-pin-line" ${chip.icon==='ri-map-pin-line'?'selected':''}>Location</option>
         <option value="ri-video-line" ${chip.icon==='ri-video-line'?'selected':''}>Platform</option>
-        <option value="ri-link-line" ${chip.icon==='ri-link-line'?'selected':''}>Link</option>
+        <option value="ri-link" ${chip.icon==='ri-link'?'selected':''}>Link</option>
         <option value="ri-user-line" ${chip.icon==='ri-user-line'?'selected':''}>Person</option>
         <option value="ri-building-line" ${chip.icon==='ri-building-line'?'selected':''}>Building</option>
       </select>
