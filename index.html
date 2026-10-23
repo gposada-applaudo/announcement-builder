@@ -3036,9 +3036,11 @@ button,input,select,textarea{font-family:inherit;color:inherit}
 .download-btn:hover:not(:disabled){background:var(--neutral-800)}
 .download-btn:active:not(:disabled){transform:translateY(0) scale(0.985)}
 .download-btn:focus-visible{box-shadow:0 0 0 3px var(--color-surface-lift),0 0 0 5px rgba(18,18,18,0.4)}
-.download-btn:disabled{background:var(--neutral-700);cursor:progress}
-.download-btn:disabled i{animation:spin 900ms linear infinite}
+.download-btn.is-busy{background:var(--neutral-700);cursor:progress}
+.download-btn.is-busy i{animation:spin 900ms linear infinite}
+.download-btn.is-blocked{background:var(--neutral-100);color:var(--neutral-600);cursor:not-allowed}
 .download-meta{margin-top:10px;text-align:center;font-size:var(--text-label);color:var(--color-text-muted)}
+.download-meta.is-blocked{color:var(--yellow-600);font-weight:var(--demi)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── Canvas preview area ──────────────────────────────────────── */
@@ -3097,14 +3099,18 @@ button,input,select,textarea{font-family:inherit;color:inherit}
 .c-frosted{display:none;position:absolute;left:24px;right:24px;bottom:24px;padding:32px 352px 32px 32px;background:rgba(255,255,255,0.88);border-radius:32px;backdrop-filter:blur(32px) saturate(1.2);flex-direction:column;align-items:flex-start;text-align:left;clip-path:inset(0 round 32px)}
 .c-frosted .c-chips{margin-top:36px}
 
-/* === STAT === */
+/* === ICON STATS === a transparent icon accompanies the number (same column as Icon left) */
 #canvas.layout-stat{display:flex;flex-direction:row;align-items:stretch}
-#canvas.layout-stat .c-media{flex:0 0 44%;overflow:hidden;position:relative}
-#canvas.layout-stat .c-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-#canvas.layout-stat .c-text{flex:1;display:flex;flex-direction:column;justify-content:center;padding:200px 80px 200px 112px}
-#canvas.layout-stat .c-stat-block{display:flex;flex-direction:column;margin-bottom:48px}
-#canvas.layout-stat .c-stat{font-size:200px;font-weight:600;line-height:.9;letter-spacing:-.02em;margin:-.059em 0 -.133em}
-#canvas.layout-stat .c-stat-label{font-size:28px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin:calc(40px - .209em) 0 -.283em}
+#canvas.layout-stat .c-media{flex:0 0 800px;position:relative;display:flex;align-items:center;justify-content:center;padding:200px 0 200px 80px}
+#canvas.layout-stat .c-media img{max-width:100%;max-height:560px;object-fit:contain;filter:drop-shadow(0 24px 48px rgba(18,18,18,0.12))}
+/* === PHOTO STATS === Photo left proportions with the stat fields */
+#canvas.layout-photo-stat{display:flex;flex-direction:row;align-items:stretch}
+#canvas.layout-photo-stat .c-media{flex:0 0 46%;overflow:hidden;position:relative}
+#canvas.layout-photo-stat .c-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+#canvas:is(.layout-stat,.layout-photo-stat) .c-text{flex:1;display:flex;flex-direction:column;justify-content:center;padding:200px 80px 200px 112px}
+#canvas:is(.layout-stat,.layout-photo-stat) .c-stat-block{display:flex;flex-direction:column;margin-bottom:48px}
+#canvas:is(.layout-stat,.layout-photo-stat) .c-stat{font-size:200px;font-weight:600;line-height:.9;letter-spacing:-.02em;margin:-.059em 0 -.133em}
+#canvas:is(.layout-stat,.layout-photo-stat) .c-stat-label{font-size:28px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin:calc(40px - .209em) 0 -.283em}
 .c-stat-block{display:none}
 
 /* === TEXT-ONLY === centred; an optional illustration sits above the text */
@@ -3191,8 +3197,9 @@ button,input,select,textarea{font-family:inherit;color:inherit}
 #canvas.bg-color .c-chip:only-child{background:#FFFFFF}
 .c-media-ph{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:rgba(18,18,18,0.04);color:#919191;font-size:30px;font-weight:400;text-align:center;z-index:0}
 .c-media-ph i{font-size:96px;line-height:1}
+.c-media-ph span{max-width:440px;line-height:1.35}
 #canvas.needs-media .c-media-ph{display:flex}
-#canvas.layout-illus-left .c-media-ph{inset:200px 0 200px 80px;border:3px dashed rgba(18,18,18,0.12);border-radius:36px;background:transparent}
+#canvas:is(.layout-illus-left,.layout-stat) .c-media-ph{inset:200px 0 200px 80px;border:3px dashed rgba(18,18,18,0.12);border-radius:36px;background:transparent}
 #canvas.layout-flanked .c-media-ph{border:3px dashed rgba(18,18,18,0.12);border-radius:36px;background:transparent;font-size:24px}
 #canvas.layout-flanked .c-media-ph span{display:none}
 /* Download-safe overrides */
@@ -3271,7 +3278,7 @@ button,input,select,textarea{font-family:inherit;color:inherit}
         <input type="file" accept="image/*" onchange="handleUpload(event)" aria-label="Upload image">
         <span class="upload-icon"><i class="ri-image-add-line"></i></span>
         <strong>Click to upload</strong>
-        <p>PNG, JPG, SVG or WebP</p>
+        <p id="upload-hint">PNG, JPG, SVG or WebP</p>
       </div>
       <img id="upload-preview" class="upload-preview" style="display:none" alt="Uploaded image preview">
       <div class="media-actions">
@@ -3280,6 +3287,7 @@ button,input,select,textarea{font-family:inherit;color:inherit}
         </a>
         <button class="clear-btn" id="clear-btn" style="display:none" onclick="clearImage()"><i class="ri-delete-bin-line"></i> Remove image</button>
       </div>
+      <div id="media-warning" class="notice notice-warn"><i class="ri-error-warning-line"></i> <span></span></div>
     </div>
 
     <div class="section">
@@ -3298,7 +3306,7 @@ button,input,select,textarea{font-family:inherit;color:inherit}
     <button class="download-btn" onclick="downloadPNG()">
       <i class="ri-download-2-line"></i> Download PNG
     </button>
-    <div class="download-meta">1920 × 1080 px</div>
+    <div class="download-meta" id="download-meta">1920 × 1080 px</div>
   </div>
 </div>
 
@@ -3375,10 +3383,10 @@ const INITIATIVES = {
   'Information and Security':{ch:'General',        col:'Orange',  lay:['illus-left','flanked','points']},
   'Public Relations':        {ch:'General',        col:'Orange',  lay:['photo-left','photo-right']},
   'Talent Acquisition':      {ch:'General',        col:'Red',     lay:['photo-left','points']},
-  'Organizational Culture':  {ch:'TheApplaudoWay', col:'Purple',  lay:['photo-left','stat','quote']},
+  'Organizational Culture':  {ch:'TheApplaudoWay', col:'Purple',  lay:['photo-left','photo-stat','stat','quote']},
   'Wellness':                {ch:'TheApplaudoWay', col:'Crimson', lay:['photo-left','event']},
   'Benefits':                {ch:'TheApplaudoWay', col:'Purple',  lay:['illus-left','points']},
-  'Culture':                 {ch:'TheApplaudoWay', col:'Purple',  lay:['photo-left','stat','event']},
+  'Culture':                 {ch:'TheApplaudoWay', col:'Purple',  lay:['photo-left','photo-stat','stat','event']},
   'Values':                  {ch:'TheApplaudoWay', col:'Purple',  lay:['flanked','stat','text-only','quote']},
   'Social Impact':           {ch:'TheApplaudoWay', col:'Purple',  lay:['photo-left','event']},
   'Recognition':             {ch:'Kudos',          col:'Yellow',  lay:['photo-right','illus-left']},
@@ -3400,28 +3408,42 @@ const LAYOUT_ICONS = {
   'flanked':     `<svg viewBox="0 0 40 24"><rect x="1" y="9" width="11" height="6" rx="2" fill="#CFCFCF"/><circle cx="20" cy="12" r="7" fill="#EBEBEB"/><rect x="28" y="9" width="11" height="6" rx="2" fill="#CFCFCF"/></svg>`,
   'full-bleed':  `<svg viewBox="0 0 40 24"><rect x="0" y="0" width="40" height="24" rx="3" fill="#CFCFCF"/><rect x="2" y="12" width="24" height="10" rx="2.5" fill="rgba(255,255,255,.8)"/><rect x="5" y="15" width="16" height="4" rx="2" fill="#CFCFCF"/></svg>`,
   'stat':        `<svg viewBox="0 0 40 24"><circle cx="12" cy="12" r="8" fill="#EBEBEB"/><rect x="24" y="5" width="13" height="9" rx="2" fill="#CFCFCF"/><rect x="24" y="17" width="9" height="3" rx="1" fill="#EBEBEB"/></svg>`,
+  'photo-stat':  `<svg viewBox="0 0 40 24"><rect x="0" y="0" width="17" height="24" rx="3" fill="#CFCFCF"/><rect x="21" y="5" width="15" height="8" rx="2" fill="#CFCFCF"/><rect x="21" y="16" width="10" height="3" rx="1.5" fill="#EBEBEB"/></svg>`,
   'text-only':   `<svg viewBox="0 0 40 24"><rect x="6" y="5" width="28" height="7" rx="2" fill="#CFCFCF"/><rect x="10" y="15" width="20" height="4" rx="2" fill="#EBEBEB"/></svg>`,
   'points':      `<svg viewBox="0 0 40 24"><rect x="2" y="7" width="13" height="4.5" rx="2" fill="#CFCFCF"/><rect x="2" y="14" width="9" height="3" rx="1.5" fill="#EBEBEB"/><rect x="19" y="2" width="19" height="20" rx="4" fill="#EBEBEB"/><rect x="21" y="4" width="15" height="4.5" rx="2" fill="#CFCFCF"/><rect x="21" y="9.75" width="15" height="4.5" rx="2" fill="#CFCFCF"/><rect x="21" y="15.5" width="15" height="4.5" rx="2" fill="#CFCFCF"/></svg>`,
   'quote':       `<svg viewBox="0 0 40 24"><rect x="5" y="5" width="30" height="4" rx="2" fill="#CFCFCF"/><rect x="9" y="11" width="22" height="4" rx="2" fill="#CFCFCF"/><circle cx="15.5" cy="19.5" r="2" fill="#EBEBEB"/><rect x="19" y="18.5" width="8" height="2" rx="1" fill="#EBEBEB"/></svg>`,
   'event':       `<svg viewBox="0 0 40 24"><rect x="15" y="1.5" width="10" height="10" rx="2.5" fill="#EBEBEB"/><path d="M17.5 1.5h5a2.5 2.5 0 0 1 2.5 2.5v.5H15V4a2.5 2.5 0 0 1 2.5-2.5z" fill="#FF8D8D"/><rect x="17.5" y="6.5" width="5" height="3" rx="1" fill="#CFCFCF"/><rect x="9" y="14" width="22" height="4" rx="2" fill="#CFCFCF"/><rect x="13" y="20" width="14" height="2.5" rx="1.25" fill="#EBEBEB"/></svg>`,
 };
 
-const ALL_LAYOUTS = ['photo-left','photo-right','illus-left','flanked','full-bleed','stat','text-only','points','quote','event'];
-const LAYOUT_LABELS = {'photo-left':'Photo left','photo-right':'Photo right','illus-left':'Icon left','flanked':'Icon center','full-bleed':'Full bleed','stat':'Icon stats','text-only':'Text only','points':'Key points','quote':'Quote','event':'Event'};
+const ALL_LAYOUTS = ['photo-left','photo-right','illus-left','flanked','full-bleed','stat','photo-stat','text-only','points','quote','event'];
+const LAYOUT_LABELS = {'photo-left':'Photo left','photo-right':'Photo right','illus-left':'Icon left','flanked':'Icon center','full-bleed':'Full bleed','stat':'Icon stats','photo-stat':'Photo stats','text-only':'Text only','points':'Key points','quote':'Quote','event':'Event'};
 
 // Field labels change with the layout so the form says what each box is for
 const FIELD_COPY = {
-  default:   {title:'Title', subtitle:'Subtitle', body:'Body copy', media:'Image / illustration', titlePh:'Main headline', subPh:'Supporting text', bodyPh:'Additional details...'},
+  default:   {title:'Title', subtitle:'Subtitle', body:'Body copy', media:'Photo', titlePh:'Main headline', subPh:'Supporting text', bodyPh:'Additional details...'},
   quote:     {title:'Quote', subtitle:'Author', body:'Author role', media:'Author photo (optional)', titlePh:'The words you want people to remember', subPh:'e.g. María López', bodyPh:'e.g. CEO, Applaudo'},
 };
 FIELD_COPY.event   = {...FIELD_COPY.default, media:'Photo (optional)'};
 FIELD_COPY.points  = {...FIELD_COPY.default, media:'Photo (optional)'};
-FIELD_COPY.flanked = {...FIELD_COPY.default, title:'Two words', titlePh:'e.g. Trust Integrity'};
+FIELD_COPY.flanked = {...FIELD_COPY.default, title:'Two words', titlePh:'e.g. Trust Integrity', media:'Icon · transparent PNG'};
+FIELD_COPY['illus-left'] = {...FIELD_COPY.default, media:'Icon · transparent PNG'};
+FIELD_COPY.stat = {...FIELD_COPY.default, media:'Icon · transparent PNG'};
+// Icon layouts only take icons with a transparent background (e.g. Thiings.co); photos would float as hard-edged rectangles
+const ICON_LAYOUTS = ['illus-left','flanked','stat'];
+// …and photo layouts only take photos: a transparent icon would float on a photo-sized frame
+const PHOTO_LAYOUTS = ['photo-left','photo-right','full-bleed','photo-stat','event','points','quote'];
+// The image the current layout may actually use (null when there is none or it is the wrong kind)
+function usableMedia(l) {
+  if (!S.mediaUrl || l === 'text-only') return null;
+  if (ICON_LAYOUTS.includes(l) && S.mediaTransparent === false) return null;
+  if (PHOTO_LAYOUTS.includes(l) && S.mediaTransparent === true) return null;
+  return S.mediaUrl;
+}
 // Fields a layout does not render are hidden from the form
-const LAYOUT_HIDES = {flanked:['eyebrow','subtitle','body','chips'], 'full-bleed':['body'], stat:['eyebrow']};
+const LAYOUT_HIDES = {flanked:['eyebrow','subtitle','body','chips'], 'full-bleed':['body'], stat:['eyebrow'], 'photo-stat':['eyebrow']};
 
 // State
-const S = {channel:'General', initiative:'Company', layout:'photo-left', color:'Red', noColor:true, chips:[], mediaUrl:null};
+const S = {channel:'General', initiative:'Company', layout:'photo-left', color:'Red', noColor:true, chips:[], mediaUrl:null, mediaTransparent:null};
 
 // Init
 function init() {
@@ -3514,7 +3536,7 @@ function renderLayouts(suggested) {
 function selectLayout(l) {
   S.layout = l;
   document.querySelectorAll('.layout-btn').forEach(b => b.classList.toggle('active', b.dataset.layout === l));
-  document.getElementById('stat-field').style.display = l==='stat'?'block':'none';
+  document.getElementById('stat-field').style.display = (l==='stat' || l==='photo-stat')?'block':'none';
   document.getElementById('date-field').style.display = l==='event'?'block':'none';
   // Only show the fields this layout actually renders
   const hidden = LAYOUT_HIDES[l] || [];
@@ -3528,6 +3550,9 @@ function selectLayout(l) {
   document.getElementById('lbl-subtitle').innerHTML = copy.subtitle + (l==='quote' ? '' : opt);
   document.getElementById('lbl-body').innerHTML = copy.body + opt;
   document.getElementById('media-label').textContent = copy.media;
+  document.getElementById('upload-hint').textContent = ICON_LAYOUTS.includes(l) ? 'Transparent PNG or SVG icon' : 'JPG or PNG photo';
+  // Thiings.co is a source of icons, so the link only shows where an icon is wanted
+  document.querySelector('.thiings-link').style.display = ICON_LAYOUTS.includes(l) ? '' : 'none';
   document.getElementById('inp-title').placeholder = copy.titlePh;
   document.getElementById('inp-subtitle').placeholder = copy.subPh;
   document.getElementById('inp-body').placeholder = copy.bodyPh;
@@ -3598,12 +3623,36 @@ function renderChips() {
 }
 
 // Image
+// Does the image have a transparent background? Samples the outer edge of the picture.
+function checkTransparency(url) {
+  S.mediaTransparent = null;
+  const img = new Image();
+  img.onload = () => {
+    const N = 64, c = document.createElement('canvas');
+    c.width = N; c.height = N;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, N, N);
+    const d = ctx.getImageData(0, 0, N, N).data;
+    let edge = 0, clear = 0;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      if (x > 1 && y > 1 && x < N - 2 && y < N - 2) continue;
+      edge++;
+      if (d[(y * N + x) * 4 + 3] < 200) clear++;
+    }
+    if (S.mediaUrl !== url) return;
+    S.mediaTransparent = clear / edge > 0.5;
+    render();
+  };
+  img.src = url;
+}
+
 function handleUpload(e) {
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
   reader.onload = function(ev) {
     const url = ev.target.result;
     S.mediaUrl = url;
+    checkTransparency(url);
     document.getElementById('upload-preview').src = url;
     document.getElementById('upload-preview').style.display = 'block';
     document.getElementById('clear-btn').style.display = 'block';
@@ -3617,6 +3666,17 @@ function clearImage() {
   document.getElementById('upload-preview').style.display = 'none';
   document.getElementById('clear-btn').style.display = 'none';
   render();
+}
+
+// Download button: blocked (with the reason underneath) while the layout is missing its image
+function updateDownload(reason) {
+  const btn = document.querySelector('.download-btn');
+  if (btn.classList.contains('is-busy')) return;
+  btn.disabled = !!reason;
+  btn.classList.toggle('is-blocked', !!reason);
+  const meta = document.getElementById('download-meta');
+  meta.textContent = reason || '1920 × 1080 px';
+  meta.classList.toggle('is-blocked', !!reason);
 }
 
 // Render canvas
@@ -3641,9 +3701,22 @@ function render() {
   // Layout class
   canvas.className = 'layout-' + l;
   canvas.classList.toggle('bg-color', !white);
-  canvas.classList.toggle('has-media', !!S.mediaUrl && l !== 'text-only');
-  const usesMedia = ['photo-left','photo-right','illus-left','flanked','full-bleed','stat'].includes(l);
-  canvas.classList.toggle('needs-media', usesMedia && !S.mediaUrl);
+  const media = usableMedia(l);
+  canvas.classList.toggle('has-media', !!media);
+  const usesMedia = ['photo-left','photo-right','illus-left','flanked','full-bleed','stat','photo-stat'].includes(l);
+  // The wrong kind of image is not placed; the preview and the editor say why
+  const wrongKind = !!S.mediaUrl && l !== 'text-only' && !media;
+  const isIconLayout = ICON_LAYOUTS.includes(l);
+  canvas.classList.toggle('needs-media', usesMedia && !media);
+  document.querySelector('#c-media-ph span').textContent = wrongKind
+    ? (isIconLayout ? 'This layout needs an icon with a transparent background' : 'This layout needs a photo, not an icon')
+    : (isIconLayout ? 'Upload a transparent PNG icon in the editor' : 'Upload a photo in the editor');
+  updateDownload(usesMedia && !media ? (isIconLayout ? 'Add a transparent icon to download' : 'Add a photo to download') : '');
+  const mediaWarn = document.getElementById('media-warning');
+  mediaWarn.style.display = wrongKind ? 'flex' : 'none';
+  mediaWarn.querySelector('span').textContent = isIconLayout
+    ? "This layout needs an icon with a transparent background, like the ones on Thiings.co. Your image has a solid background, so it isn't placed."
+    : "This layout needs a photo (JPG or PNG with a background). Your image is an icon with a transparent background, so it isn't placed. Icon left, Icon center and Icon stats use icons.";
 
   // Title auto font-size
   const titleEl = document.getElementById('c-title');
@@ -3657,7 +3730,7 @@ function render() {
   if(l==='flanked')    fs = 96;
   if(l==='full-bleed') fs = 84;
   if(l==='text-only')  fs = 113;
-  if(l==='stat')       fs = 82;
+  if(l==='stat' || l==='photo-stat') fs = 82;
   if(l==='quote')      fs = 76;
   if(l==='event')      fs = 96;
   if(l==='points')     fs = 88;
@@ -3714,9 +3787,9 @@ function render() {
     const container = document.getElementById('c-text');
     if(!container) return;
     const budget = l === 'text-only' ? {maxH: 400, avail: 760}
-                 : (l === 'event' && !S.mediaUrl) ? {maxH: 340, avail: 680, maxW: 1000}
-                 : (l === 'points' && !S.mediaUrl) ? {maxH: 340, avail: 680} : null;
-    const maxH = budget ? budget.maxH : container.clientHeight * (l==='stat' ? 0.25 : l==='quote' ? 0.55 : 0.5);
+                 : (l === 'event' && !media) ? {maxH: 340, avail: 680, maxW: 1000}
+                 : (l === 'points' && !media) ? {maxH: 340, avail: 680} : null;
+    const maxH = budget ? budget.maxH : container.clientHeight * ((l==='stat' || l==='photo-stat') ? 0.25 : l==='quote' ? 0.55 : 0.5);
     const maxW = budget && budget.maxW ? budget.maxW : container.clientWidth * 0.96;
     let size = fs;
     titleEl.style.fontSize = size + 'px';
@@ -3760,14 +3833,14 @@ function render() {
       titleEl.style.fontSize = size + 'px';
     }
     // Event without a photo: hug the text column to its longest visible line so the lockup centres on what you see
-    if (l === 'event' && !S.mediaUrl) {
+    if (l === 'event' && !media) {
       const sc = canvas.getBoundingClientRect().width / 1920 || 1;
       const lineW = el => { const r = document.createRange(); r.selectNodeContents(el); return Math.max(0, ...Array.from(r.getClientRects()).map(x => x.width)) / sc; };
       const w = Math.max(...kids.map(k => k.classList.contains('c-chips') ? (k.firstElementChild ? k.firstElementChild.offsetWidth - (k.querySelector('.c-chips-wrap') ? 12 : 0) : 0) : lineW(k)));
       container.style.width = Math.ceil(w + 2) + 'px';
     }
     // Key points / Event without a photo: the two columns share one top edge, and the pair is centred
-    if ((l === 'points' || l === 'event') && !S.mediaUrl) {
+    if ((l === 'points' || l === 'event') && !media) {
       const pts = document.getElementById(l === 'points' ? 'c-points' : 'c-date');
       const top = Math.round((1080 - Math.max(used(), pts.offsetHeight)) / 2);
       container.style.marginTop = top + 'px';
@@ -3779,7 +3852,7 @@ function render() {
   const eyebrowEl = document.getElementById('c-eyebrow');
   eyebrowEl.textContent = eyebrow;
   eyebrowEl.style.color = '#FF4040';
-  eyebrowEl.style.display = (eyebrow && l !== 'stat') ? 'block' : 'none';
+  eyebrowEl.style.display = (eyebrow && l !== 'stat' && l !== 'photo-stat') ? 'block' : 'none';
 
   const subEl = document.getElementById('c-subtitle');
   subEl.textContent = subtitle;
@@ -3796,8 +3869,8 @@ function render() {
     document.getElementById('c-author-role').textContent = body;
     document.getElementById('c-author-role').style.display = body ? 'block' : 'none';
     const aImg = document.getElementById('c-author-img');
-    if(S.mediaUrl) { aImg.src = S.mediaUrl; aImg.style.display = 'block'; } else { aImg.removeAttribute('src'); aImg.style.display = 'none'; }
-    document.getElementById('c-author').classList.toggle('no-photo', !S.mediaUrl);
+    if(media) { aImg.src = media; aImg.style.display = 'block'; } else { aImg.removeAttribute('src'); aImg.style.display = 'none'; }
+    document.getElementById('c-author').classList.toggle('no-photo', !media);
   } else {
     document.getElementById('c-author').style.display = 'none';
   }
@@ -3850,9 +3923,9 @@ function render() {
   const dateEl = document.getElementById('c-date'), textEl = document.getElementById('c-text');
   dateEl.style.marginTop = '';
   textEl.style.width = '';
-  if (l === 'event' && !S.mediaUrl) { if (dateEl.parentElement !== canvas) canvas.insertBefore(dateEl, textEl); }
+  if (l === 'event' && !media) { if (dateEl.parentElement !== canvas) canvas.insertBefore(dateEl, textEl); }
   else if (dateEl.parentElement !== textEl) textEl.insertBefore(dateEl, textEl.firstChild);
-  const pointsHost = (l === 'points' && S.mediaUrl) ? document.getElementById('c-text') : canvas;
+  const pointsHost = (l === 'points' && media) ? document.getElementById('c-text') : canvas;
   if (pointsEl.parentElement !== pointsHost) pointsHost.appendChild(pointsEl);
   if(l === 'points') {
     S.chips.filter(c => c.text).slice(0, 4).forEach(p => {
@@ -3866,8 +3939,8 @@ function render() {
 
   // Media
   const mediaImg = document.getElementById('c-media-img');
-  if(S.mediaUrl && l !== 'quote' && l !== 'text-only') {
-    mediaImg.src = S.mediaUrl;
+  if(media && l !== 'quote') {
+    mediaImg.src = media;
     mediaImg.style.display = 'block';
   } else {
     mediaImg.style.display = 'none';
@@ -3979,7 +4052,7 @@ function render() {
   const statBlock = document.getElementById('c-stat-block');
   const statEl = document.getElementById('c-stat');
   const statLabelEl = document.getElementById('c-stat-label');
-  if(l === 'stat') {
+  if(l === 'stat' || l === 'photo-stat') {
     if(stat) {
       statBlock.style.display = 'flex';
       statEl.textContent = stat;
@@ -4032,7 +4105,7 @@ function applySquircles() {
     const W = media.offsetWidth, H = media.offsetHeight;
     if (l === 'photo-right' && W && H)
       media.style.clipPath = squircleFull(W, H, 36);
-    else if ((l === 'photo-left' || l === 'stat' || ((l === 'event' || l === 'points') && S.mediaUrl)) && W && H)
+    else if ((l === 'photo-left' || l === 'photo-stat' || ((l === 'event' || l === 'points') && usableMedia(l))) && W && H)
       media.style.clipPath = squircleRight(W, H, 36);
     else
       media.style.clipPath = '';
@@ -4234,7 +4307,9 @@ function updateScale() {
 // Download
 async function downloadPNG() {
   const btn = document.querySelector('.download-btn');
+  if (btn.disabled) return;
   btn.disabled = true;
+  btn.classList.add('is-busy');
   btn.innerHTML = '<i class="ri-loader-4-line"></i> Generating…';
   const canvas = document.getElementById('canvas');
   const orig = canvas.style.transform;
@@ -4312,8 +4387,10 @@ async function downloadPNG() {
     frostedEl.style.backdropFilter      = origFrostedBackdrop;
     frostedEl.style.webkitBackdropFilter= origFrostedWkBackdrop;
     canvas.style.transform = orig;
+    btn.classList.remove('is-busy');
     btn.disabled = false;
     btn.innerHTML = '<i class="ri-download-2-line"></i> Download PNG';
+    render();
   }
 }
 
